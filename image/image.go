@@ -19,9 +19,9 @@ func Grab(productID, URL string) string {
 		fmt.Printf("Something when wrong grabbing image: %s", err)
 	}
 
-	// Split the Shopify URL up to make it easier to grab the file extension.
-	// Shopify supports jpg, gif, and png.
+	// Split the URL up to make it easier to grab the file extension.
 	parts := strings.Split(URL, ".")
+	// TODO: Confirm URL scheme.
 	extension := parts[3]
 
 	fileName := fmt.Sprintf("%s.%s", productID, extension[:len(extension)-2])
