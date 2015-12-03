@@ -30,7 +30,6 @@ func imageUpload(products []Product) error {
 			for _, i := range product.Images {
 
 				// First grab and save the image from the URL.
-				// TODO: Grab and save image.
 				imageName := image.Grab(*product.ID, *i.URL)
 				path := fmt.Sprintf("%s", imageName)
 
@@ -80,7 +79,7 @@ func imageUpload(products []Product) error {
 
 				req, err := http.NewRequest("POST", url, &body)
 
-				req.Header.Set("User-agent", "Support-tool: choppily - one of JOEYM8's tools.")
+				req.Header.Set("User-agent", "vend-image-upload")
 				req.Header.Set("Content-Type", writer.FormDataContentType())
 				// TODO: Token
 				token := ""
