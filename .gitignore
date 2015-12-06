@@ -4,4 +4,10 @@
 *.log
 *.txt
 
+*.gif
+*.svg
+*.png
+*.jpeg
+*.jpg
+
 vend-image-upload

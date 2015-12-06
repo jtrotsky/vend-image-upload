@@ -13,6 +13,6 @@ EXAMPLE PAYLOAD:
 {
     "handle": "Mulcher-life",
     "sku": "20049",
-    "image_url": "https://s3.amazonaws.com/vend-images/product/standard/9/6/96b22c38f6e84a638663fb1f768a86e19b393a16.jpg",
+    "image_url": "https://www.vendhq.com/images/icns/vend-logo.svg",
 }
 */
