@@ -8,28 +8,30 @@ import (
 	"strings"
 
 	"github.com/jtrotsky/govend/vend"
+	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
 
 // Grab ...
-func Grab(productID, URL string) string {
+func Grab(products vendapi.UploadProduct) string {
 
 	// Grab the image and write it to a file.
-	image, err := urlGet(URL)
+	image, err := urlGet(*products.ImageURL)
 	if err != nil {
 		fmt.Printf("Something when wrong grabbing image: %s", err)
 	}
 
 	// Split the URL up to make it easier to grab the file extension.
-	parts := strings.Split(URL, ".")
+	parts := strings.Split(*products.ImageURL, ".")
 	// TODO: Confirm URL scheme.
-	extension := parts[3]
+	extension := parts[len(parts)-1]
 
-	fileName := fmt.Sprintf("%s.%s", productID, extension[:len(extension)-2])
+	fileName := fmt.Sprintf("%s.%s", *products.SKU, extension)
 
 	// Write product data to file
 	err = ioutil.WriteFile(fileName, image, 0666)
 	if err != nil {
-		fmt.Printf("Something went wrong writing image to file.")
+		// TODO: error? log?
+		fmt.Printf("Something went wrong writing image to file.\n")
 	}
 
 	return fileName

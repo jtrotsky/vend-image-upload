@@ -14,11 +14,13 @@ import (
 	"time"
 
 	"github.com/jtrotsky/govend/vend"
-	"github.com/jtrotsky/vend-image-upload/image"
 )
 
 // imageUpload uploads a single product image to Vend.
 func imageUpload(products []Product) error {
+
+	// TODO:
+	// imageName := ""
 
 	for _, product := range products {
 
@@ -30,8 +32,8 @@ func imageUpload(products []Product) error {
 			for _, i := range product.Images {
 
 				// First grab and save the image from the URL.
-				imageName := image.Grab(*product.ID, *i.URL)
-				path := fmt.Sprintf("%s", imageName)
+				// imageName := image.Grab(*product.ID, *i.URL)
+				path := fmt.Sprintf("%s", i)
 
 				// Make sure image is removed at end.
 				defer os.Remove(path)

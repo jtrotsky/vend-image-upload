@@ -10,8 +10,8 @@ import (
 	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
 
-// Reads a line of provided CSV file.
-func readLine(path string) ([]vendapi.UploadProduct, error) {
+// ReadCSV a line of provided CSV file.
+func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 
 	// SKU and Handle should be unique identifiers.
 	exampleHeader := []string{"sku", "handle", "image_url"}
@@ -56,5 +56,5 @@ func readLine(path string) ([]vendapi.UploadProduct, error) {
 		productList = append(productList, product)
 	}
 
-	return productList, err
+	return &productList, err
 }
