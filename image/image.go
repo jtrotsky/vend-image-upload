@@ -4,6 +4,7 @@ package image
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -60,8 +61,11 @@ func urlGet(url string) ([]byte, error) {
 	// Make sure response body is closed at end.
 	defer res.Body.Close()
 
-	// TODO: Check if true/false
-	vend.ResponseCheck(res.StatusCode)
+	// Check HTTP response.
+	// TODO: MOre descriptive errors.
+	if !vend.ResponseCheck(res.StatusCode) {
+		log.Fatalf("Error: %d", res.StatusCode)
+	}
 
 	// Read what we got back.
 	body, err := ioutil.ReadAll(res.Body)

@@ -14,10 +14,17 @@ import (
 	"time"
 
 	"github.com/jtrotsky/govend/vend"
+	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
 
-// imageUpload uploads a single product image to Vend.
-func imageUpload(products []Product) error {
+// TODO: condensed version of below.
+func uploadImage(imagePath string) error {
+	var err error
+	return err
+}
+
+// ImageUpload uploads a single product image to Vend.
+func ImageUpload(imagePath string, products []vendapi.UploadProduct) error {
 
 	// TODO:
 	// imageName := ""
