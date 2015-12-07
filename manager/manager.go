@@ -11,20 +11,22 @@ import (
 
 // Manager contains the Vend client.
 type Manager struct {
-	vend vend.Client
+	client vend.Client
 }
 
 // NewManager creates an instance of manager.
-func NewManager(vend vend.Client) *Manager {
-	return &Manager{vend}
+func NewManager(client vend.Client) *Manager {
+	return &Manager{client}
 }
 
-// Run execues the app's main functions.
-func (manager *Manager) Run(f string) {
-	// Using log gives us an opening timestamp.
+// TODO: Comment syntax.
+
+// Run reads the product CSV, gets all Vend products, then posts images.
+func (manager *Manager) Run(filePath string) {
+	// Log opening timestamp.
 	log.Printf("BEGIN\n")
 
-	imagePayload, err := reader.ReadCSV(f)
+	imagePayload, err := reader.ReadCSV(filePath)
 	if err != nil {
 		log.Fatalf("Error reading CSV file: %s", err)
 	}
@@ -34,7 +36,7 @@ func (manager *Manager) Run(f string) {
 
 	fmt.Printf("\nGrabbing products.\n")
 	// Get all products, ignore productMap.
-	_, _, err = manager.vend.Products()
+	_, _, err = manager.client.Products()
 	if err != nil {
 		log.Fatalf("Failed to get products.: %s", err)
 	}

@@ -37,6 +37,9 @@ func Grab(products vendapi.UploadProduct) string {
 	return fileName
 }
 
+// TODO: url get body
+// Or split to return either response or body
+// Get body takes response and returns body.
 func urlGet(url string) ([]byte, error) {
 
 	client := &http.Client{}
@@ -57,6 +60,7 @@ func urlGet(url string) ([]byte, error) {
 	// Make sure response body is closed at end.
 	defer res.Body.Close()
 
+	// TODO: Check if true/false
 	vend.ResponseCheck(res.StatusCode)
 
 	// Read what we got back.
