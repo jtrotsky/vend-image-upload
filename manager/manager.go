@@ -7,6 +7,7 @@ import (
 	"github.com/jtrotsky/govend/vend"
 	"github.com/jtrotsky/vend-image-upload/image"
 	"github.com/jtrotsky/vend-image-upload/reader"
+	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
 
 // Manager contains the Vend client.
@@ -21,7 +22,7 @@ func NewManager(client vend.Client) *Manager {
 
 // TODO: Comment syntax.
 
-// Run reads the product CSV, gets all Vend products, then posts images.
+// Run reads the product CSV, gets all products from Vend, then posts their images.
 func (manager *Manager) Run(filePath string) {
 	// Log opening timestamp.
 	log.Printf("BEGIN\n")
@@ -36,13 +37,25 @@ func (manager *Manager) Run(filePath string) {
 
 	fmt.Printf("\nGrabbing products.\n")
 	// Get all products, ignore productMap.
-	_, _, err = manager.client.Products()
+	_, productMap, err := manager.client.Products()
 	if err != nil {
 		log.Fatalf("Failed to get products.: %s", err)
 	}
 
+	products, err := matchVendProduct(productMap, imagePayload)
+
 	for _, i := range *imagePayload {
-		image.Grab(i)
+		// Loop through each CSV line, match it's respective product ID
+		// scrape its image, then post its image.
+		imagePath := image.Grab(i)
 		fmt.Printf("\n\n%s\n", i)
+		vendapi.ImageUpload(imagePath, *products)
 	}
+}
+
+func matchVendProduct(productMap *map[string]vend.Product, imagePayload *[]vendapi.UploadProduct) (*[]vendapi.UploadProduct, error) {
+	// TODO: Loop through handle/sku combos to get product ids from Product then
+	// build them into the uploadProduct payload.
+	var err error
+	return err
 }

@@ -34,6 +34,7 @@ func init() {
 	flag.Parse()
 
 	// Check all arguments are given.
+	// TODO: Print default flags.
 	if domainPrefix == "" {
 		log.Fatalf("Domain prefix not given.")
 	}

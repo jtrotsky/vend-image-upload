@@ -1,8 +1,9 @@
 // Package vendapi handles interactions with the Vend API.
 package vendapi
 
-// UploadProduct ...
+// UploadProduct contains the fields needed to post an image to a product in Vend.
 type UploadProduct struct {
+	ID       *string `json:"id,omitempty"`
 	Handle   *string `json:"handle,omitempty"`
 	SKU      *string `json:"sku,omitempty"`
 	ImageURL *string `json:"image_url,omitempty"`
