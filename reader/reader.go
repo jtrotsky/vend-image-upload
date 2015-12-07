@@ -3,7 +3,6 @@ package reader
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"os"
 
@@ -14,35 +13,36 @@ import (
 func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 
 	// SKU and Handle should be unique identifiers.
-	exampleHeader := []string{"sku", "handle", "image_url"}
+	header := []string{"sku", "handle", "image_url"}
 
 	// Open our provided CSV file.
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		log.Printf("Could not read from CSV file: %s", err)
 		os.Exit(1)
 	}
 	// Make sure to close at end.
-	defer f.Close()
+	defer file.Close()
 
 	// Create CSV reader on our file.
-	r := csv.NewReader(f)
+	reader := csv.NewReader(file)
 
 	// Read and store our header line.
-	headerRow, err := r.Read()
+	headerRow, err := reader.Read()
 
 	// Check each string in the header row is same as our template.
 	for i := range headerRow {
-		if headerRow[i] != exampleHeader[i] {
-			fmt.Println("Found error in header row. Check log.")
+		if headerRow[i] != header[i] {
+			// TODO: Why string? "Incorrect header order, expected order is"
 			log.Fatalf("No header match for: %s Instead got: %s.",
-				string(exampleHeader[i]), string(headerRow[i]))
+				string(header[i]), string(headerRow[i]))
 		}
 	}
 
 	// Read the rest of the data from the CSV.
-	rawData, err := r.ReadAll()
+	rawData, err := reader.ReadAll()
 
+	// TODO: Naming confusing
 	var product vendapi.UploadProduct
 	var productList []vendapi.UploadProduct
 

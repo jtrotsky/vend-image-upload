@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"strings"
 
 	"github.com/jtrotsky/govend/vend"
@@ -10,29 +11,38 @@ import (
 
 var (
 	domainPrefix string
-	path         string
-	token        string
+	filePath     string
+	authToken    string
 )
 
 func main() {
 
-	// Invoke new Vend client. Timezone argument left blank.
-	v := vend.NewClient(token, domainPrefix, "")
-	manager := manager.NewManager(v)
+	// Invoke new Vend client.
+	// Timezone argument left blank as unused.
+	vendClient := vend.NewClient(authToken, domainPrefix, "")
+	manager := manager.NewManager(vendClient)
 
-	manager.Run(path)
+	manager.Run(filePath)
 }
 
 func init() {
 
 	// Get store info from command line flags.
-	flag.StringVar(&domainPrefix, "d", "",
-		"The Vend store name (prefix of xxxx.vendhq.com)")
-	flag.StringVar(&path, "f", "",
-		"Path to product CSV file that contains image URLs.")
-	flag.StringVar(&token, "t", "",
-		"Personal API Access Token for the store, generated from Setup -> API Access.")
+	flag.StringVar(&domainPrefix, "d", "", "Vend store name.")
+	flag.StringVar(&filePath, "f", "", "Path to product CSV file.")
+	flag.StringVar(&authToken, "t", "", "API Authentication Token.")
 	flag.Parse()
+
+	// Check all arguments are given.
+	if domainPrefix == "" {
+		log.Fatalf("Domain prefix not given.")
+	}
+	if filePath == "" {
+		log.Fatalf("Path to file not given.")
+	}
+	if authToken == "" {
+		log.Fatalf("Authentication token not given.")
+	}
 
 	// To save people who write DomainPrefix.vendhq.com.
 	// Split DomainPrefix on the "." period character then grab the first part.

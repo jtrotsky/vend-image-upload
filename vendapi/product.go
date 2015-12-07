@@ -14,9 +14,9 @@ type Product struct {
 	Handle          *string        `json:"handle,omitempty"`
 	SKU             *string        `json:"sku,omitempty"`
 	Active          *bool          `json:"active,omitempty"`
-	Source          *string        `json:"source"`
+	Source          *string        `json:"source,omitempty"`
 	DeletedAt       *time.Time     `json:"deleted_at,omitempty"`
-	Version         *int64         `json:"version"`
+	Version         *int64         `json:"version,omitempty"`
 	ImageURL        *string        `json:"image_url,omitempty"`
 	Images          []ProductImage `json:"images,omitempty"`
 }
@@ -25,7 +25,7 @@ type Product struct {
 type ProductImage struct {
 	ID      *string `json:"id,omitempty"`
 	URL     *string `json:"url,omitempty"`
-	Version *int64  `json:"version"`
+	Version *int64  `json:"version,omitempty"`
 }
 
 /*
