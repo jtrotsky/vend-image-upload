@@ -78,7 +78,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 		// TODO: domainprefix/productID
 		url := vend.ImageUploadURLFactory(domainPrefix, product.ID)
 
-		fmt.Printf("Uploading image to: %s", url)
+		fmt.Printf("\nUploading image to: %s\n", url)
 
 		req, err := http.NewRequest("POST", url, &body)
 
