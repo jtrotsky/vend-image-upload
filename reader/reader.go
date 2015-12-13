@@ -3,6 +3,7 @@ package reader
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 
@@ -18,7 +19,8 @@ func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 	// Open our provided CSV file.
 	file, err := os.Open(path)
 	if err != nil {
-		log.Printf("Could not read from CSV file: %s", err)
+		fmt.Printf("Could not read from CSV file: %s", err)
+		// TODO: More elegant way to do this?
 		os.Exit(1)
 	}
 	// Make sure to close at end.

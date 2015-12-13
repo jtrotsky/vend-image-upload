@@ -13,7 +13,7 @@ import (
 )
 
 // Grab ...
-func Grab(products vendapi.UploadProduct) string {
+func Grab(products vendapi.UploadProduct) (string, error) {
 
 	// Grab the image and write it to a file.
 	image, err := urlGet(*products.ImageURL)
@@ -23,19 +23,20 @@ func Grab(products vendapi.UploadProduct) string {
 
 	// Split the URL up to make it easier to grab the file extension.
 	parts := strings.Split(*products.ImageURL, ".")
-	// TODO: Confirm URL scheme.
+	// TODO: Confirm URL scheme. Cannot get referral urls, like goo.gl.
 	extension := parts[len(parts)-1]
 
 	fileName := fmt.Sprintf("%s.%s", *products.SKU, extension)
 
 	// Write product data to file
+	// TODO: Confirm correct chmod
 	err = ioutil.WriteFile(fileName, image, 0666)
 	if err != nil {
 		// TODO: error? log?
 		fmt.Printf("Something went wrong writing image to file.\n")
 	}
 
-	return fileName
+	return fileName, err
 }
 
 // TODO: url get body
@@ -51,7 +52,7 @@ func urlGet(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Printf("\nGrabbing: %s", url)
+	fmt.Printf("Grabbing: %s", url)
 	// Doing the request.
 	res, err := client.Do(req)
 	if err != nil {
@@ -62,7 +63,7 @@ func urlGet(url string) ([]byte, error) {
 	defer res.Body.Close()
 
 	// Check HTTP response.
-	// TODO: MOre descriptive errors.
+	// TODO: More descriptive errors.
 	if !vend.ResponseCheck(res.StatusCode) {
 		log.Fatalf("Error: %d", res.StatusCode)
 	}

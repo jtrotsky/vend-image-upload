@@ -4,6 +4,7 @@ package vendapi
 import "time"
 
 // Product is the basic Vend product structure.
+// TODO: Any reason to use this and not default govend struct?
 type Product struct {
 	ID              *string        `json:"id,omitempty"`
 	SourceID        *string        `json:"source_id,omitempty"`
