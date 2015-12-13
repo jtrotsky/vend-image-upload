@@ -48,6 +48,7 @@ func (manager *Manager) Run(filePath string) {
 		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
 	}
 
+	fmt.Printf("\nGetting and posting images.\n")
 	for _, product := range *products {
 		// Loop through each CSV line, match it's respective product ID
 		// scrape its image, then post its image.

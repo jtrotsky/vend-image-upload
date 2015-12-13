@@ -32,6 +32,7 @@ func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 	// Read and store our header line.
 	headerRow, err := reader.Read()
 
+	// TODO: use lower() On call column headers
 	// Check each string in the header row is same as our template.
 	for i := range headerRow {
 		if headerRow[i] != header[i] {
