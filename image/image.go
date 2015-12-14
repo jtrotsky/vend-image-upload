@@ -23,16 +23,13 @@ func Grab(products vendapi.UploadProduct) (string, error) {
 
 	// Split the URL up to make it easier to grab the file extension.
 	parts := strings.Split(*products.ImageURL, ".")
-	// TODO: Confirm URL scheme. Cannot get referral urls, like goo.gl.
 	extension := parts[len(parts)-1]
 
 	fileName := fmt.Sprintf("%s.%s", *products.SKU, extension)
 
 	// Write product data to file
-	// TODO: Confirm correct chmod
 	err = ioutil.WriteFile(fileName, image, 0666)
 	if err != nil {
-		// TODO: error? log?
 		fmt.Printf("Something went wrong writing image to file.\n")
 	}
 
@@ -63,9 +60,8 @@ func urlGet(url string) ([]byte, error) {
 	defer res.Body.Close()
 
 	// Check HTTP response.
-	// TODO: More descriptive errors.
 	if !vend.ResponseCheck(res.StatusCode) {
-		log.Fatalf("Error: %d", res.StatusCode)
+		log.Fatalf("Bad status code: %d.", res.StatusCode)
 	}
 
 	// Read what we got back.

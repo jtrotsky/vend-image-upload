@@ -75,8 +75,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 		}
 
 		// Create the Vend URL to send our image to.
-		// TODO: domainprefix/productID
-		url := vend.ImageUploadURLFactory(domainPrefix, product.ID)
+		url := vend.ImageUploadURLFactory(domainPrefix, *product.ID)
 
 		fmt.Printf("\nUploading image to: %s\n", url)
 
@@ -89,23 +88,21 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 		client := &http.Client{}
 
 		// Make the request.
-		// TODO:
 		var attempt int
 		var res *http.Response
 		for {
 			time.Sleep(time.Second)
-
 			res, err = client.Do(req)
 			// Catch error.
-			// TODO: !vend.ResponseCheck(res.StatusCode)
-			if err != nil {
-				fmt.Println(err)
-				// fmt.Printf("\nError performing request: %s Status code: %d", err, res.StatusCode)
+			if err != nil || !vend.ResponseCheck(res.StatusCode) {
+				fmt.Printf("\nError performing request: %s. Status code: %d.", err, res.StatusCode)
 				// Delays between attempts will be exponentially longer each time.
 				attempt++
 				delay := vend.BackoffDuration(attempt)
 				time.Sleep(delay)
 			} else {
+				// Ensure that image file is removed after it's uploaded.
+				os.Remove(imagePath)
 				break
 			}
 		}

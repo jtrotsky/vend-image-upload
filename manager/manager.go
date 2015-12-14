@@ -28,21 +28,20 @@ func (manager *Manager) Run(filePath string) {
 	// Log opening timestamp.
 	log.Printf("BEGIN\n")
 
+	// Read provided CSV file and store product info.
 	imagePayload, err := reader.ReadCSV(filePath)
 	if err != nil {
 		log.Fatalf("Error reading CSV file: %s", err)
 	}
 
-	// TODO:
-	// fmt.Printf("%s", imagePayload)
-
 	fmt.Printf("\nGrabbing products.\n")
-	// Get all products, ignore productMap.
+	// Get all products from Vend.
 	_, productMap, err := manager.client.Products()
 	if err != nil {
 		log.Fatalf("Failed to get products.: %s", err)
 	}
 
+	// Match products from Vend with those from the provided CSV file.
 	products := matchVendProduct(productMap, imagePayload)
 	if err != nil {
 		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
@@ -50,14 +49,13 @@ func (manager *Manager) Run(filePath string) {
 
 	fmt.Printf("\nGetting and posting images.\n")
 	for _, product := range *products {
-		// Loop through each CSV line, match it's respective product ID
-		// scrape its image, then post its image.
+		// For each product match, first grab the image from the URL, then post that
+		// image to the product on Vend.
 		imagePath, err := image.Grab(product)
 		if err != nil {
 			log.Fatalf("Failed to get image for product.: %s", err)
 		}
 		vendapi.ImageUpload(manager.client.Token, manager.client.DomainPrefix, imagePath, product)
-		os.Remove(imagePath)
 	}
 
 	// Log closing timestamp.
@@ -71,7 +69,7 @@ func matchVendProduct(productMap *map[string]vend.Product,
 
 	// Loop through each product from the store, and add the ID field
 	// to any product from the CSV file that matches.
-	for ID, product := range *productMap {
+	for _, product := range *productMap {
 		for _, upload := range *imagePayload {
 
 			// Ignore if any required values are empty.
@@ -87,17 +85,17 @@ func matchVendProduct(productMap *map[string]vend.Product,
 
 			// Make sure we have a unique handle/sku match.
 			if *product.SKU == *upload.SKU && *product.Handle == *upload.Handle {
-				products = append(products, vendapi.UploadProduct{ID, upload.Handle, upload.SKU, upload.ImageURL})
-				// fmt.Printf("%s%s%s%s", ID, upload.Handle, upload.SKU, upload.ImageURL)
+				products = append(products, vendapi.UploadProduct{product.ID, upload.Handle, upload.SKU, upload.ImageURL})
 				break
 			}
 		}
 	}
 
+	// Check how many matches we got.
 	if len(products) > 0 {
-		fmt.Printf("\nGot %d matches.\n\n", len(products))
+		fmt.Printf("\nGot %d matches.\n", len(products))
 	} else {
-		fmt.Println("No product matches.")
+		fmt.Printf("\nNo product matches.\n")
 		os.Exit(0)
 	}
 
