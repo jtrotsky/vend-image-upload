@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
@@ -20,8 +21,7 @@ func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Printf("Could not read from CSV file: %s", err)
-		// TODO: More elegant way to do this?
-		os.Exit(1)
+		os.Exit(0)
 	}
 	// Make sure to close at end.
 	defer file.Close()
@@ -32,20 +32,18 @@ func ReadCSV(path string) (*[]vendapi.UploadProduct, error) {
 	// Read and store our header line.
 	headerRow, err := reader.Read()
 
-	// TODO: use lower() On call column headers
 	// Check each string in the header row is same as our template.
-	for i := range headerRow {
-		if headerRow[i] != header[i] {
-			// TODO: Why string? "Incorrect header order, expected order is"
-			log.Fatalf("No header match for: %s Instead got: %s.",
-				string(header[i]), string(headerRow[i]))
+	for i, row := range headerRow {
+		if strings.ToLower(row) != header[i] {
+			log.Fatalf(
+				"No header match for: %q. Instead got: %q. Expected: %s, %s, %s",
+				header[i], strings.ToLower(row), header[0], header[1], header[2])
 		}
 	}
 
 	// Read the rest of the data from the CSV.
 	rawData, err := reader.ReadAll()
 
-	// TODO: Naming confusing
 	var product vendapi.UploadProduct
 	var productList []vendapi.UploadProduct
 
