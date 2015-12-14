@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/jtrotsky/govend/vend"
@@ -34,15 +35,20 @@ func init() {
 	flag.Parse()
 
 	// Check all arguments are given.
-	// TODO: Print default flags.
 	if domainPrefix == "" {
-		log.Fatalf("Domain prefix not given.")
+		fmt.Println(
+			"Domain prefix not given. Expected like: store-name.vendhq.com")
+		os.Exit(0)
 	}
 	if filePath == "" {
-		log.Fatalf("Path to file not given.")
+		fmt.Println(
+			"Path to file not given. Expected like: ~/Documents/product-csv-file.csv")
+		os.Exit(0)
 	}
 	if authToken == "" {
-		log.Fatalf("Authentication token not given.")
+		fmt.Println(
+			"Authentication token not given. Expected like: oe1R9xoQeJRUdyVkz6trbcf9GnUTBovJWKRSBCEf")
+		os.Exit(0)
 	}
 
 	// To save people who write DomainPrefix.vendhq.com.
