@@ -1,6 +1,6 @@
+// Package image grabs and saves image locally, then returns its name.
 package image
 
-// Grabs and saves image locally, then returns its name.
 import (
 	"fmt"
 	"io/ioutil"
