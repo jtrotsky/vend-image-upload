@@ -26,13 +26,13 @@ func NewManager(client vend.Client) *Manager {
 // TODO: Comment syntax.
 
 // Run reads the product CSV, gets all products from Vend, then posts their images.
-func (manager *Manager) Run(productFilePath, logFilePath string) {
+func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 	// Log opening timestamp.
 	log.Printf("BEGIN\n")
 
 	fmt.Printf("\nReading products from CSV file.\n")
 	// Read provided CSV file and store product info.
-	productsFromCSV, err := reader.ReadCSV(productFilePath, logFilePath)
+	productsFromCSV, err := reader.ReadCSV(productFilePath, logFile)
 	if err != nil {
 		log.Fatalf("Error reading CSV file: %s", err)
 		os.Exit(0)
@@ -48,7 +48,7 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 
 	fmt.Printf("\nLooking for product matches.\n")
 	// Match products from Vend with those from the provided CSV file.
-	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFilePath)
+	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFile.FilePath)
 	if err != nil {
 		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
 	}
@@ -57,7 +57,7 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 	for _, product := range *matchedProducts {
 		// For each product match, first grab the image from the URL, then post that
 		// image to the product on Vend.
-		imagePath, err := image.Grab(product, logFilePath)
+		imagePath, err := image.Grab(product, logFile.FilePath)
 		if err != nil {
 			var productID, productSKU, productHandle, imageURL string
 			if product.ID != nil {
@@ -80,7 +80,7 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 			} else {
 				imageURL = ""
 			}
-			logFile := logger.NewLogFile(logFilePath)
+			logFile := logger.NewLogFile(logFile.FilePath)
 			logFile.WriteEntry(logger.RowError{
 				"network", 0, productID, productSKU, productHandle, imageURL, err})
 			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
@@ -90,6 +90,11 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 		}
 		vendapi.ImageUpload(manager.client.Token, manager.client.DomainPrefix,
 			imagePath, product)
+	}
+
+	// If no errors were recorded then remove the error file.
+	if logFile.ErrorCount == 0 {
+		os.Remove(logFile.FilePath)
 	}
 
 	// Log closing timestamp.
@@ -103,6 +108,7 @@ func matchVendProduct(productsFromVend *map[string]vend.Product,
 
 	// Loop through each product from the store, and add the ID field
 	// to any product from the CSV file that matches.
+Match:
 	for _, csvProduct := range *productsFromCSV {
 		for _, vendProduct := range *productsFromVend {
 			// Ignore if any required values are empty.
@@ -117,7 +123,7 @@ func matchVendProduct(productsFromVend *map[string]vend.Product,
 			// Make sure we have a unique handle/sku match.
 			if *vendProduct.SKU == *csvProduct.SKU && *vendProduct.Handle == *csvProduct.Handle {
 				products = append(products, vendapi.ProductUpload{vendProduct.ID, csvProduct.Handle, csvProduct.SKU, csvProduct.ImageURL})
-				break
+				continue Match
 			}
 		}
 		// Record product from CSV if no match to Vend products.
@@ -146,7 +152,7 @@ func matchVendProduct(productsFromVend *map[string]vend.Product,
 
 	// Check how many matches we got.
 	if len(products) > 0 {
-		fmt.Printf("%d products matched.\n", len(products))
+		fmt.Printf("%d of %d products matched.\n", len(products), len(*productsFromCSV))
 	} else {
 		fmt.Printf("No product matches.\n")
 		os.Exit(0)

@@ -35,7 +35,7 @@ func main() {
 	vendClient := vend.NewClient(authToken, domainPrefix, "")
 	manager := manager.NewManager(vendClient)
 
-	manager.Run(productFilePath, logFilePath)
+	manager.Run(productFilePath, logFile)
 }
 
 func init() {
