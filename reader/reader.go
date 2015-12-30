@@ -14,11 +14,11 @@ import (
 )
 
 // ReadCSV reads the provided CSV file and stores the input as product objects.
-func ReadCSV(productFilePath, logFilePath string) (*[]vendapi.ProductUpload, error) {
+func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.ProductUpload, error) {
 
 	// Start CSV logfile in current directory.
 	// TODO: Revisit. Add flag for specifying logfile output directory.
-	logFile := logger.NewLogFile(logFilePath)
+	// logFile := logger.NewLogFile(logFilePath)
 
 	// SKU and Handle combo should be a unique identifier.
 	header := []string{"sku", "handle", "image_url"}
@@ -102,8 +102,12 @@ func ReadCSV(productFilePath, logFilePath string) (*[]vendapi.ProductUpload, err
 
 	// Check how many rows we successfully read and stored.
 	if len(productList) > 0 {
-		fmt.Printf("%d of %d rows successful, see error file for details.\n",
-			len(productList), len(rawData))
+		if len(productList) != len(rawData) {
+			fmt.Printf("%d of %d rows successful, see error file for details.\n",
+				len(productList), len(rawData))
+		} else {
+			fmt.Printf("%d rows successful.\n", len(productList))
+		}
 	} else {
 		fmt.Printf("No valid products.\n")
 		os.Exit(0)

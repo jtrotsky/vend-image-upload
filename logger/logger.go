@@ -8,19 +8,20 @@ import (
 
 // LogFile is a basic filepath to the program log.
 type LogFile struct {
-	filePath string
+	ErrorCount int
+	FilePath   string
 }
 
 // NewLogFile creates a pointer to the program's logfile.
 func NewLogFile(filePath string) *LogFile {
-	return &LogFile{filePath}
+	return &LogFile{0, filePath}
 }
 
 // CreateLog creates a basic CSV logfile with a header row.
 func (logger *LogFile) CreateLog() {
 	// TODO: Too verbose?
 	// Create logfile in current directory.
-	file, err := os.Create(logger.filePath)
+	file, err := os.Create(logger.FilePath)
 	if err != nil {
 		log.Fatalf("Could not create error file in current directory: %s", err)
 	}
@@ -35,8 +36,10 @@ func (logger *LogFile) CreateLog() {
 
 // WriteEntry takes a RowError struct and writes it to the CSV logfile.
 func (logger *LogFile) WriteEntry(entry RowError) {
+	logger.ErrorCount++
+
 	// Open existing log file.
-	file, err := os.OpenFile(logger.filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(logger.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("Ironic error in writing error to error file: %s", err)
 	}
