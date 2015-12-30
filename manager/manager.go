@@ -121,8 +121,11 @@ Match:
 				continue
 			}
 			// Make sure we have a unique handle/sku match.
-			if *vendProduct.SKU == *csvProduct.SKU && *vendProduct.Handle == *csvProduct.Handle {
-				products = append(products, vendapi.ProductUpload{vendProduct.ID, csvProduct.Handle, csvProduct.SKU, csvProduct.ImageURL})
+			if *vendProduct.SKU == *csvProduct.SKU &&
+				*vendProduct.Handle == *csvProduct.Handle {
+				products = append(products,
+					vendapi.ProductUpload{vendProduct.ID, csvProduct.Handle, csvProduct.SKU,
+						csvProduct.ImageURL})
 				continue Match
 			}
 		}
