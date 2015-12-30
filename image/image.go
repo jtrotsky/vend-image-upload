@@ -12,13 +12,13 @@ import (
 	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
 
-// Grab ...
-func Grab(products vendapi.UploadProduct) (string, error) {
+// Grab downloads a product image and writes it to a file.
+func Grab(products vendapi.ProductUpload) (string, error) {
 
-	// Grab the image and write it to a file.
+	// Grab the image based on provided URL.
 	image, err := urlGet(*products.ImageURL)
 	if err != nil {
-		fmt.Printf("Something when wrong grabbing image: %s", err)
+		return "", err
 	}
 
 	// Split the URL up to make it easier to grab the file extension.
@@ -30,7 +30,7 @@ func Grab(products vendapi.UploadProduct) (string, error) {
 	// Write product data to file
 	err = ioutil.WriteFile(fileName, image, 0666)
 	if err != nil {
-		fmt.Printf("Something went wrong writing image to file.\n")
+		log.Printf("Something went wrong writing image to file: %s", err)
 	}
 
 	return fileName, err
@@ -53,7 +53,7 @@ func urlGet(url string) ([]byte, error) {
 	// Doing the request.
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("\nError performing request: %s", err)
+		fmt.Printf("\nError performing request: %s\n", err)
 		return nil, err
 	}
 	// Make sure response body is closed at end.
