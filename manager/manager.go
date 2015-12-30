@@ -87,7 +87,7 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 			// Ignore product if image grabbing errored.
 			continue
 		}
-		vendapi.ImageUpload(manager.client.Token, manager.client.DomainPrefix,
+		vendapi.UploadImage(manager.client.Token, manager.client.DomainPrefix,
 			imagePath, product)
 	}
 

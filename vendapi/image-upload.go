@@ -1,8 +1,8 @@
 // Package vendapi handles interactions with the Vend API.
 package vendapi
 
-// ImageUploadResponse is the upper level data structure of the response.
-type ImageUploadResponse struct {
+// ImageUpload is the upper level data structure of the response.
+type ImageUpload struct {
 	Data Data `json:"data,omitempty"`
 }
 
@@ -19,7 +19,7 @@ type Data struct {
 ENDPOINT:
 <domain_prefix>.vendhq.com/api/2.0/<product_id>/actions/image_upload
 
-EXAMPLE RESPONSE PAYLOAD:
+RESPONSE PAYLOAD:
 "data": {
 	"id": "b8ca3a6e-7294-11e4-fd8a-e663ebb91b19",
 	"product_id": "bc305bf5-da94-11e4-f3a2-b1ae3a5f4c50",
