@@ -119,7 +119,7 @@ Match:
 			if vendProduct.DeletedAt != nil {
 				continue
 			}
-			// Make sure we have a unique handle/sku match.
+			// Make sure we have a unique handle/sku match, then add product to list.
 			if *vendProduct.SKU == *csvProduct.SKU &&
 				*vendProduct.Handle == *csvProduct.Handle {
 				products = append(products,
@@ -128,7 +128,7 @@ Match:
 				continue Match
 			}
 		}
-		// Record product from CSV if no match to Vend products.
+		// Record product from CSV as error if no match to Vend products.
 		var productSKU, productHandle, imageURL string
 		if csvProduct.SKU != nil {
 			productSKU = *csvProduct.SKU
@@ -158,6 +158,5 @@ Match:
 		fmt.Printf("No product matches.\n")
 		os.Exit(0)
 	}
-
 	return &products
 }

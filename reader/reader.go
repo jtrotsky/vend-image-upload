@@ -15,7 +15,6 @@ import (
 
 // ReadCSV reads the provided CSV file and stores the input as product objects.
 func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.ProductUpload, error) {
-
 	// SKU and Handle combo should be a unique identifier.
 	header := []string{"sku", "handle", "image_url"}
 
@@ -126,6 +125,5 @@ func readRow(row []string) (vendapi.ProductUpload, error) {
 			return product, err
 		}
 	}
-
 	return product, nil
 }
