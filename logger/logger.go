@@ -45,8 +45,8 @@ func (logger *LogFile) WriteEntry(entry RowError) {
 	}
 
 	// Write RowError to CSV file.
-	_, err = file.WriteString(fmt.Sprintf("%s,%d,%s,%s,%s,%s,%s\n",
-		entry.Error, entry.Row, entry.ID, entry.SKU, entry.Handle, entry.ImageURL, entry.Reason))
+	_, err = file.WriteString(fmt.Sprintf("%s,%d,%s,%s,%s,%s,%s\n", entry.Error,
+		entry.Row, entry.ID, entry.SKU, entry.Handle, entry.ImageURL, entry.Reason))
 	if err != nil {
 		log.Printf("Error writing entry to CSV error file: %s", err)
 	}
