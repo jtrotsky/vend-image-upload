@@ -81,8 +81,8 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 			}
 			logFile := logger.NewLogFile(logFilePath)
 			logFile.WriteEntry(logger.RowError{0, productID, productSKU, productHandle, imageURL, err})
-			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\nFailed to get image: %s\n\n",
-				*product.Handle, *product.SKU, err)
+			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
+				*product.Handle, *product.SKU)
 			// Ignore product if image grabbing errored.
 			continue
 		}
