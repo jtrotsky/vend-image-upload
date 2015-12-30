@@ -20,8 +20,8 @@ import (
 // func Upload(imagePath string) error {
 // }
 
-// ImageUpload uploads a single product image to Vend.
-func ImageUpload(authToken, domainPrefix, imagePath string, product ProductUpload) error {
+// UploadImage uploads a single product image to Vend.
+func UploadImage(authToken, domainPrefix, imagePath string, product ProductUpload) error {
 
 	var err error
 	// Check an image exists.
@@ -117,7 +117,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product ProductUploa
 
 		// Unmarshal JSON response into our respone struct.
 		// from this we can find info about the image status.
-		response := ImageUploadResponse{}
+		response := ImageUpload{}
 		err = json.Unmarshal(resBody, &response)
 		if err != nil {
 			log.Fatalf("Error unmarhsalling response body: %s", err)
