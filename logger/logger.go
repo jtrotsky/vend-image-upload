@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-// LogFile is a basic filepath to the program log.
+// LogFile holds basic information about the programs logfile.
 type LogFile struct {
 	ErrorCount int
 	FilePath   string
 }
 
-// NewLogFile creates a pointer to the program's logfile.
+// NewLogFile creates a reference to the program's logfile.
 func NewLogFile(filePath string) *LogFile {
 	return &LogFile{0, filePath}
 }
