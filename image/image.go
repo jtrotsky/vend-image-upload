@@ -13,7 +13,7 @@ import (
 )
 
 // Grab downloads a product image and writes it to a file.
-func Grab(products vendapi.ProductUpload) (string, error) {
+func Grab(products vendapi.ProductUpload, logFilePath string) (string, error) {
 
 	// Grab the image based on provided URL.
 	image, err := urlGet(*products.ImageURL)

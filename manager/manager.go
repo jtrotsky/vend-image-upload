@@ -7,6 +7,7 @@ import (
 
 	"github.com/jtrotsky/govend/vend"
 	"github.com/jtrotsky/vend-image-upload/image"
+	"github.com/jtrotsky/vend-image-upload/logger"
 	"github.com/jtrotsky/vend-image-upload/reader"
 	"github.com/jtrotsky/vend-image-upload/vendapi"
 )
@@ -55,8 +56,31 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 	for _, product := range *matchedProducts {
 		// For each product match, first grab the image from the URL, then post that
 		// image to the product on Vend.
-		imagePath, err := image.Grab(product)
+		imagePath, err := image.Grab(product, logFilePath)
 		if err != nil {
+			var productID, productSKU, productHandle, imageURL string
+			if product.ID != nil {
+				productID = *product.ID
+			} else {
+				productID = ""
+			}
+			if product.SKU != nil {
+				productSKU = *product.SKU
+			} else {
+				productSKU = ""
+			}
+			if product.Handle != nil {
+				productHandle = *product.Handle
+			} else {
+				productHandle = ""
+			}
+			if product.ImageURL != nil {
+				imageURL = *product.ImageURL
+			} else {
+				imageURL = ""
+			}
+			logFile := logger.NewLogFile(logFilePath)
+			logFile.WriteEntry(logger.RowError{0, productID, productSKU, productHandle, imageURL, err})
 			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\nFailed to get image: %s\n\n",
 				*product.Handle, *product.SKU, err)
 			// Ignore product if image grabbing errored.
@@ -79,18 +103,15 @@ func matchVendProduct(productMap *map[string]vend.Product,
 	// to any product from the CSV file that matches.
 	for _, product := range *productMap {
 		for _, upload := range *imagePayload {
-
 			// Ignore if any required values are empty.
 			if product.SKU == nil || product.Handle == nil ||
 				upload.SKU == nil || upload.Handle == nil {
 				continue
 			}
-
 			// Ignore if product deleted.
 			if product.DeletedAt != nil {
 				continue
 			}
-
 			// Make sure we have a unique handle/sku match.
 			if *product.SKU == *upload.SKU && *product.Handle == *upload.Handle {
 				products = append(products, vendapi.ProductUpload{product.ID, upload.Handle, upload.SKU, upload.ImageURL})
