@@ -24,7 +24,6 @@ import (
 func ImageUpload(authToken, domainPrefix, imagePath string, product ProductUpload) error {
 
 	var err error
-
 	// Check an image exists.
 	if product.ImageURL == nil {
 		return err

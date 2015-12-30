@@ -88,7 +88,9 @@ func ReadCSV(productFilePath, logFilePath string) (*[]vendapi.ProductUpload, err
 			} else {
 				imageURL = ""
 			}
-			logFile.WriteEntry(logger.RowError{rowNumber, productID, productSKU, productHandle, imageURL, err})
+			logFile.WriteEntry(
+				logger.RowError{
+					rowNumber, productID, productSKU, productHandle, imageURL, err})
 			log.Printf("Error reading row %d from CSV for product: %s. Error: %s",
 				rowNumber, row, err)
 			continue
@@ -100,7 +102,8 @@ func ReadCSV(productFilePath, logFilePath string) (*[]vendapi.ProductUpload, err
 
 	// Check how many rows we successfully read and stored.
 	if len(productList) > 0 {
-		fmt.Printf("%d of %d rows successful, see error file for details.\n", len(productList), len(rawData))
+		fmt.Printf("%d of %d rows successful, see error file for details.\n",
+			len(productList), len(rawData))
 	} else {
 		fmt.Printf("No valid products.\n")
 		os.Exit(0)
