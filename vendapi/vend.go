@@ -16,17 +16,14 @@ import (
 	"github.com/jtrotsky/govend/vend"
 )
 
-// TODO: condensed version of below.
+// TODO: Condensed version of below.
 // func Upload(imagePath string) error {
-// 	var err error
-// 	return err
 // }
 
 // ImageUpload uploads a single product image to Vend.
-func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduct) error {
+func ImageUpload(authToken, domainPrefix, imagePath string, product ProductUpload) error {
 
 	var err error
-
 	// Check an image exists.
 	if product.ImageURL == nil {
 		return err
@@ -77,7 +74,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 		// Create the Vend URL to send our image to.
 		url := vend.ImageUploadURLFactory(domainPrefix, *product.ID)
 
-		fmt.Printf("\nUploading image to: %s\n", url)
+		fmt.Printf("\nUploading to: %s\n", url)
 
 		req, err := http.NewRequest("POST", url, &body)
 
@@ -116,7 +113,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 			return err
 		}
 
-		fmt.Println(string(resBody))
+		// fmt.Println(string(resBody))
 
 		// Unmarshal JSON response into our respone struct.
 		// from this we can find info about the image status.
@@ -129,7 +126,7 @@ func ImageUpload(authToken, domainPrefix, imagePath string, product UploadProduc
 
 		payload := response.Data
 
-		fmt.Printf("\nImage created at position: %d\n\n", *payload.Position)
+		fmt.Printf("<<SUCCESS!>> Image created at position: %d\n\n", *payload.Position)
 	}
 	return err
 }
