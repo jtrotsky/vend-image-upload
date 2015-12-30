@@ -27,7 +27,7 @@ func (logger *LogFile) CreateLog() {
 	// Ensure file is closed at end.
 	defer file.Close()
 
-	_, err = file.WriteString("row,id,sku,handle,image_url,reason\n")
+	_, err = file.WriteString("error,row,id,sku,handle,image_url,reason\n")
 	if err != nil {
 		log.Printf("Error writing error file header: %s", err)
 	}
@@ -42,8 +42,8 @@ func (logger *LogFile) WriteEntry(entry RowError) {
 	}
 
 	// Write RowError to CSV file.
-	_, err = file.WriteString(fmt.Sprintf("%d,%s,%s,%s,%s,%s\n",
-		entry.Row, entry.ID, entry.SKU, entry.Handle, entry.ImageURL, entry.Reason))
+	_, err = file.WriteString(fmt.Sprintf("%s,%d,%s,%s,%s,%s,%s\n",
+		entry.Error, entry.Row, entry.ID, entry.SKU, entry.Handle, entry.ImageURL, entry.Reason))
 	if err != nil {
 		log.Printf("Error writing entry to CSV error file: %s", err)
 	}

@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -47,7 +48,7 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 
 	fmt.Printf("\nLooking for product matches.\n")
 	// Match products from Vend with those from the provided CSV file.
-	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV)
+	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFilePath)
 	if err != nil {
 		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
 	}
@@ -80,7 +81,8 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 				imageURL = ""
 			}
 			logFile := logger.NewLogFile(logFilePath)
-			logFile.WriteEntry(logger.RowError{0, productID, productSKU, productHandle, imageURL, err})
+			logFile.WriteEntry(logger.RowError{
+				"network", 0, productID, productSKU, productHandle, imageURL, err})
 			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
 				*product.Handle, *product.SKU)
 			// Ignore product if image grabbing errored.
@@ -94,30 +96,52 @@ func (manager *Manager) Run(productFilePath, logFilePath string) {
 	log.Printf("FIN\n")
 }
 
-func matchVendProduct(productMap *map[string]vend.Product,
-	imagePayload *[]vendapi.ProductUpload) *[]vendapi.ProductUpload {
+func matchVendProduct(productsFromVend *map[string]vend.Product,
+	productsFromCSV *[]vendapi.ProductUpload, logFilePath string) *[]vendapi.ProductUpload {
 
 	var products []vendapi.ProductUpload
 
 	// Loop through each product from the store, and add the ID field
 	// to any product from the CSV file that matches.
-	for _, product := range *productMap {
-		for _, upload := range *imagePayload {
+	for _, csvProduct := range *productsFromCSV {
+		for _, vendProduct := range *productsFromVend {
 			// Ignore if any required values are empty.
-			if product.SKU == nil || product.Handle == nil ||
-				upload.SKU == nil || upload.Handle == nil {
+			if vendProduct.SKU == nil || vendProduct.Handle == nil ||
+				csvProduct.SKU == nil || csvProduct.Handle == nil {
 				continue
 			}
 			// Ignore if product deleted.
-			if product.DeletedAt != nil {
+			if vendProduct.DeletedAt != nil {
 				continue
 			}
 			// Make sure we have a unique handle/sku match.
-			if *product.SKU == *upload.SKU && *product.Handle == *upload.Handle {
-				products = append(products, vendapi.ProductUpload{product.ID, upload.Handle, upload.SKU, upload.ImageURL})
+			if *vendProduct.SKU == *csvProduct.SKU && *vendProduct.Handle == *csvProduct.Handle {
+				products = append(products, vendapi.ProductUpload{vendProduct.ID, csvProduct.Handle, csvProduct.SKU, csvProduct.ImageURL})
 				break
 			}
 		}
+		// Record product from CSV if no match to Vend products.
+		var productSKU, productHandle, imageURL string
+		if csvProduct.SKU != nil {
+			productSKU = *csvProduct.SKU
+		} else {
+			productSKU = ""
+		}
+		if csvProduct.Handle != nil {
+			productHandle = *csvProduct.Handle
+		} else {
+			productHandle = ""
+		}
+		if csvProduct.ImageURL != nil {
+			imageURL = *csvProduct.ImageURL
+		} else {
+			imageURL = ""
+		}
+		err := errors.New("No handle/sku match")
+		logFile := logger.NewLogFile(logFilePath)
+		logFile.WriteEntry(
+			logger.RowError{
+				"match", 0, "", productSKU, productHandle, imageURL, err})
 	}
 
 	// Check how many matches we got.
