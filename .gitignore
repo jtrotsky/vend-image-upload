@@ -4,6 +4,8 @@
 *.csv
 *.log
 *.txt
+*.zip
+*.exe
 
 *.gif
 *.svg
