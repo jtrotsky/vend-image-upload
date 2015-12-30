@@ -90,7 +90,7 @@ func ReadCSV(productFilePath, logFilePath string) (*[]vendapi.ProductUpload, err
 			}
 			logFile.WriteEntry(
 				logger.RowError{
-					rowNumber, productID, productSKU, productHandle, imageURL, err})
+					"read", rowNumber, productID, productSKU, productHandle, imageURL, err})
 			log.Printf("Error reading row %d from CSV for product: %s. Error: %s",
 				rowNumber, row, err)
 			continue
