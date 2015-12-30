@@ -80,7 +80,6 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 			} else {
 				imageURL = ""
 			}
-			logFile := logger.NewLogFile(logFile.FilePath)
 			logFile.WriteEntry(logger.RowError{
 				"network", 0, productID, productSKU, productHandle, imageURL, err})
 			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
