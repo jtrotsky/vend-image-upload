@@ -48,7 +48,7 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 
 	fmt.Printf("\nLooking for product matches.\n")
 	// Match products from Vend with those from the provided CSV file.
-	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFile.FilePath)
+	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFile)
 	if err != nil {
 		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
 	}
@@ -57,7 +57,7 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 	for _, product := range *matchedProducts {
 		// For each product match, first grab the image from the URL, then post that
 		// image to the product on Vend.
-		imagePath, err := image.Grab(product, logFile.FilePath)
+		imagePath, err := image.Grab(product)
 		if err != nil {
 			var productID, productSKU, productHandle, imageURL string
 			if product.ID != nil {
@@ -102,7 +102,7 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 }
 
 func matchVendProduct(productsFromVend *map[string]vend.Product,
-	productsFromCSV *[]vendapi.ProductUpload, logFilePath string) *[]vendapi.ProductUpload {
+	productsFromCSV *[]vendapi.ProductUpload, logFile *logger.LogFile) *[]vendapi.ProductUpload {
 
 	var products []vendapi.ProductUpload
 
@@ -144,7 +144,6 @@ Match:
 			imageURL = ""
 		}
 		err := errors.New("No handle/sku match")
-		logFile := logger.NewLogFile(logFilePath)
 		logFile.WriteEntry(
 			logger.RowError{
 				"match", 0, "", productSKU, productHandle, imageURL, err})
