@@ -25,7 +25,6 @@ func main() {
 	currentTimeUTC := time.Now()
 	// Set log filepath.
 	logFilePath = fmt.Sprintf("./%d_vendimageupload_errors.csv", currentTimeUTC.Unix())
-
 	// Start CSV logfile in current directory with unix timestamp in file name.
 	logFile := logger.NewLogFile(logFilePath)
 	logFile.CreateLog()

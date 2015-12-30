@@ -16,10 +16,6 @@ import (
 // ReadCSV reads the provided CSV file and stores the input as product objects.
 func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.ProductUpload, error) {
 
-	// Start CSV logfile in current directory.
-	// TODO: Revisit. Add flag for specifying logfile output directory.
-	// logFile := logger.NewLogFile(logFilePath)
-
 	// SKU and Handle combo should be a unique identifier.
 	header := []string{"sku", "handle", "image_url"}
 
