@@ -61,31 +61,9 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 		rowNumber++
 		product, err = readRow(row)
 		if err != nil {
-			// TODO: Can this be shortened?
-			var productID, productSKU, productHandle, imageURL string
-			if product.ID != nil {
-				productID = *product.ID
-			} else {
-				productID = ""
-			}
-			if product.SKU != nil {
-				productSKU = *product.SKU
-			} else {
-				productSKU = ""
-			}
-			if product.Handle != nil {
-				productHandle = *product.Handle
-			} else {
-				productHandle = ""
-			}
-			if product.ImageURL != nil {
-				imageURL = *product.ImageURL
-			} else {
-				imageURL = ""
-			}
 			logFile.WriteEntry(
 				logger.RowError{
-					"read", rowNumber, productID, productSKU, productHandle, imageURL, err})
+					"read", rowNumber, product.ID, product.SKU, product.Handle, product.ImageURL, err})
 			log.Printf("Error reading row %d from CSV for product: %s. Error: %s",
 				rowNumber, row, err)
 			continue
@@ -115,9 +93,9 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 func readRow(row []string) (vendapi.ProductUpload, error) {
 	var product vendapi.ProductUpload
 
-	product.SKU = &row[0]
-	product.Handle = &row[1]
-	product.ImageURL = &row[2]
+	product.SKU = row[0]
+	product.Handle = row[1]
+	product.ImageURL = row[2]
 
 	for i := range row {
 		if len(row[i]) < 1 {

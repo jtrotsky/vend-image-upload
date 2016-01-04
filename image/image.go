@@ -16,16 +16,16 @@ import (
 func Grab(products vendapi.ProductUpload) (string, error) {
 
 	// Grab the image based on provided URL.
-	image, err := urlGet(*products.ImageURL)
+	image, err := urlGet(products.ImageURL)
 	if err != nil {
 		return "", err
 	}
 
 	// Split the URL up to make it easier to grab the file extension.
-	parts := strings.Split(*products.ImageURL, ".")
+	parts := strings.Split(products.ImageURL, ".")
 	extension := parts[len(parts)-1]
 
-	fileName := fmt.Sprintf("%s.%s", *products.SKU, extension)
+	fileName := fmt.Sprintf("%s.%s", products.SKU, extension)
 
 	// Write product data to file
 	err = ioutil.WriteFile(fileName, image, 0666)
