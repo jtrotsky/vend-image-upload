@@ -59,31 +59,10 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 		// image to the product on Vend.
 		imagePath, err := image.Grab(product)
 		if err != nil {
-			var productID, productSKU, productHandle, imageURL string
-			if product.ID != nil {
-				productID = *product.ID
-			} else {
-				productID = ""
-			}
-			if product.SKU != nil {
-				productSKU = *product.SKU
-			} else {
-				productSKU = ""
-			}
-			if product.Handle != nil {
-				productHandle = *product.Handle
-			} else {
-				productHandle = ""
-			}
-			if product.ImageURL != nil {
-				imageURL = *product.ImageURL
-			} else {
-				imageURL = ""
-			}
 			logFile.WriteEntry(logger.RowError{
-				"network", 0, productID, productSKU, productHandle, imageURL, err})
+				"network", 0, product.ID, product.SKU, product.Handle, product.ImageURL, err})
 			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
-				*product.Handle, *product.SKU)
+				product.Handle, product.SKU)
 			// Ignore product if image grabbing errored.
 			continue
 		}
@@ -112,7 +91,7 @@ Match:
 		for _, vendProduct := range *productsFromVend {
 			// Ignore if any required values are empty.
 			if vendProduct.SKU == nil || vendProduct.Handle == nil ||
-				csvProduct.SKU == nil || csvProduct.Handle == nil {
+				csvProduct.SKU == "" || csvProduct.Handle == "" {
 				continue
 			}
 			// Ignore if product deleted.
@@ -120,35 +99,19 @@ Match:
 				continue
 			}
 			// Make sure we have a unique handle/sku match, then add product to list.
-			if *vendProduct.SKU == *csvProduct.SKU &&
-				*vendProduct.Handle == *csvProduct.Handle {
+			if *vendProduct.SKU == csvProduct.SKU &&
+				*vendProduct.Handle == csvProduct.Handle {
 				products = append(products,
-					vendapi.ProductUpload{vendProduct.ID, csvProduct.Handle, csvProduct.SKU,
+					vendapi.ProductUpload{*vendProduct.ID, csvProduct.Handle, csvProduct.SKU,
 						csvProduct.ImageURL})
 				continue Match
 			}
 		}
 		// Record product from CSV as error if no match to Vend products.
-		var productSKU, productHandle, imageURL string
-		if csvProduct.SKU != nil {
-			productSKU = *csvProduct.SKU
-		} else {
-			productSKU = ""
-		}
-		if csvProduct.Handle != nil {
-			productHandle = *csvProduct.Handle
-		} else {
-			productHandle = ""
-		}
-		if csvProduct.ImageURL != nil {
-			imageURL = *csvProduct.ImageURL
-		} else {
-			imageURL = ""
-		}
 		err := errors.New("No handle/sku match")
 		logFile.WriteEntry(
 			logger.RowError{
-				"match", 0, "", productSKU, productHandle, imageURL, err})
+				"match", 0, "", csvProduct.SKU, csvProduct.Handle, csvProduct.ImageURL, err})
 	}
 
 	// Check how many matches we got.
