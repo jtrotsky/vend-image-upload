@@ -4,6 +4,7 @@ package vendapi
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,17 +24,13 @@ import (
 // UploadImage uploads a single product image to Vend.
 func UploadImage(authToken, domainPrefix, imagePath string, product ProductUpload) error {
 
-	var err error
-	// Check an image exists.
-	if product.ImageURL == nil {
-		return err
-	}
+	err := errors.New("Product has no image.")
 
 	// This checks we actually have an image to post.
-	if len(*product.ImageURL) > 0 {
+	if len(product.ImageURL) > 0 {
 
 		// First grab and save the image from the URL.
-		imageURL := fmt.Sprintf("%s", *product.ImageURL)
+		imageURL := fmt.Sprintf("%s", product.ImageURL)
 
 		var body bytes.Buffer
 		// Start multipart writer.
@@ -72,7 +69,7 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 		}
 
 		// Create the Vend URL to send our image to.
-		url := vend.ImageUploadURLFactory(domainPrefix, *product.ID)
+		url := vend.ImageUploadURLFactory(domainPrefix, product.ID)
 
 		fmt.Printf("\nUploading to: %s\n", url)
 
