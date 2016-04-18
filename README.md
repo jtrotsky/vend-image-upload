@@ -3,6 +3,14 @@
 ### Summary
 Intended to make uploading images to Vend easier to do in bulk by taking a CSV file containing `sku, handle, image_url` for products and then proceeding to grab and upload the given product to Vend.
 
+### Howto
+
+Run the tool locally and point it to the CSV file of products/images to upload.
+
+```
+$ ./vend-image-upload -d honestmulch -t <access-token> -f ~/Desktop/products_with_images.csv
+```
+
 ### Limitations/Known issues
 * URLs must end with *an* image extension of some sort (`.jpg, .png`, etc)
 * CSV column headers must be in exact order (`sku, handle, image_url`)
