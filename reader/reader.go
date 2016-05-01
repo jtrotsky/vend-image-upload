@@ -11,6 +11,7 @@ import (
 
 	"github.com/jtrotsky/vend-image-upload/logger"
 	"github.com/jtrotsky/vend-image-upload/vendapi"
+	"github.com/wallclockbuilder/stringutil"
 )
 
 // ReadCSV reads the provided CSV file and stores the input as product objects.
@@ -33,15 +34,20 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 	// Read and store our header line.
 	headerRow, err := reader.Read()
 	if err != nil {
+		log.Printf("Failed to read headerow.")
 		return &[]vendapi.ProductUpload{}, err
+	}
+
+	if len(headerRow) > 2 {
+		log.Printf("Issue with header row, longer than expected: %s", headerRow)
 	}
 
 	// Check each string in the header row is same as our template.
 	for i, row := range headerRow {
-		if strings.ToLower(row) != header[i] {
+		if stringutil.Strip(strings.ToLower(row)) != header[i] {
 			log.Fatalf(
-				"No header match for: %q. Instead got: %q. Expected: %s, %s, %s",
-				header[i], strings.ToLower(row), header[0], header[1], header[2])
+				"No header match for: %q. Instead got: %q.",
+				header[i], strings.ToLower(row))
 			return &[]vendapi.ProductUpload{}, err
 		}
 	}
@@ -63,7 +69,13 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 		if err != nil {
 			logFile.WriteEntry(
 				logger.RowError{
-					"read", rowNumber, product.ID, product.SKU, product.Handle, product.ImageURL, err})
+					Error:    "read",
+					Row:      rowNumber,
+					ID:       product.ID,
+					SKU:      product.SKU,
+					Handle:   product.Handle,
+					ImageURL: product.ImageURL,
+					Reason:   err})
 			log.Printf("Error reading row %d from CSV for product: %s. Error: %s",
 				rowNumber, row, err)
 			continue
