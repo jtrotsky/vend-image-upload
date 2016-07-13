@@ -38,7 +38,7 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 		return &[]vendapi.ProductUpload{}, err
 	}
 
-	if len(headerRow) > 2 {
+	if len(headerRow) > 3 {
 		log.Printf("Issue with header row, longer than expected: %s", headerRow)
 	}
 
