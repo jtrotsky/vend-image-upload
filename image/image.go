@@ -24,8 +24,14 @@ func Grab(products vendapi.ProductUpload) (string, error) {
 	// Split the URL up to make it easier to grab the file extension.
 	parts := strings.Split(products.ImageURL, ".")
 	extension := parts[len(parts)-1]
-
-	fileName := fmt.Sprintf("%s.%s", products.SKU, extension)
+	// If the extension looks about the right length then use it for the
+	// filename, otherwise do not.
+	fileName := ""
+	if len(extension) == 3 {
+		fileName = fmt.Sprintf("%s.%s", products.ID, extension)
+	} else {
+		fileName = fmt.Sprintf("%s", products.ID)
+	}
 
 	// Write product data to file
 	err = ioutil.WriteFile(fileName, image, 0666)
