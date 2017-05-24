@@ -4,25 +4,23 @@ package reader
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
-	"log"
 	"os"
 	"strings"
 
-	"github.com/jtrotsky/vend-image-upload/logger"
 	"github.com/jtrotsky/vend-image-upload/vendapi"
+	log "github.com/sirupsen/logrus"
 	"github.com/wallclockbuilder/stringutil"
 )
 
 // ReadCSV reads the provided CSV file and stores the input as product objects.
-func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.ProductUpload, error) {
+func ReadCSV(productFilePath string) (*[]vendapi.ProductUpload, error) {
 	// SKU and Handle combo should be a unique identifier.
 	header := []string{"sku", "handle", "image_url"}
 
 	// Open our provided CSV file.
 	file, err := os.Open(productFilePath)
 	if err != nil {
-		log.Fatalf("Could not read from CSV file: %s", err)
+		log.WithError(err).WithField("filepath", productFilePath).Error("Could not read from CSV file")
 		return &[]vendapi.ProductUpload{}, err
 	}
 	// Make sure to close at end.
@@ -34,20 +32,22 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 	// Read and store our header line.
 	headerRow, err := reader.Read()
 	if err != nil {
-		log.Printf("Failed to read headerow.")
+		log.Error("Failed to read headerow.")
 		return &[]vendapi.ProductUpload{}, err
 	}
 
 	if len(headerRow) > 3 {
-		log.Printf("Issue with header row, longer than expected: %s", headerRow)
+		log.WithField("header_row_error", headerRow).Warning("Header row longer than expected")
 	}
 
 	// Check each string in the header row is same as our template.
 	for i, row := range headerRow {
 		if stringutil.Strip(strings.ToLower(row)) != header[i] {
-			log.Fatalf(
-				"No header match for: %q. Instead got: %q.",
-				header[i], strings.ToLower(row))
+			log.WithFields(log.Fields{
+				"type":     "header_mismatch",
+				"expected": header[i],
+				"got":      strings.ToLower(row),
+			}).Error("Header mismatch")
 			return &[]vendapi.ProductUpload{}, err
 		}
 	}
@@ -67,17 +67,15 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 		rowNumber++
 		product, err = readRow(row)
 		if err != nil {
-			logFile.WriteEntry(
-				logger.RowError{
-					Error:    "read",
-					Row:      rowNumber,
-					ID:       product.ID,
-					SKU:      product.SKU,
-					Handle:   product.Handle,
-					ImageURL: product.ImageURL,
-					Reason:   err})
-			log.Printf("Error reading row %d from CSV for product: %s. Error: %s",
-				rowNumber, row, err)
+			log.WithError(err).WithFields(log.Fields{
+				"type":          "row_read",
+				"row":           rowNumber,
+				"product_id":    product.ID,
+				"product_sku":   product.SKU,
+				"produt_handle": product.Handle,
+				"image_url":     product.ImageURL,
+				"reason":        err,
+			}).Error("Error reading row from CSV")
 			continue
 		}
 
@@ -87,15 +85,12 @@ func ReadCSV(productFilePath string, logFile *logger.LogFile) (*[]vendapi.Produc
 
 	// Check how many rows we successfully read and stored.
 	if len(productList) > 0 {
-		if len(productList) != len(rawData) {
-			fmt.Printf("%d of %d rows successful, see error file for details.\n",
-				len(productList), len(rawData))
-		} else {
-			fmt.Printf("%d rows successful.\n", len(productList))
-		}
+		log.WithFields(log.Fields{
+			"successful": len(productList),
+			"total":      len(rawData),
+		}).Info("Products read from file")
 	} else {
-		fmt.Printf("No valid products.\n")
-		os.Exit(0)
+		log.Fatal("No valid products found")
 	}
 
 	return &productList, err
