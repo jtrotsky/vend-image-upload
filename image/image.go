@@ -5,12 +5,12 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/jtrotsky/govend/vend"
 	"github.com/jtrotsky/vend-image-upload/vendapi"
+	log "github.com/sirupsen/logrus"
 )
 
 // Grab downloads a product image and writes it to a file.
@@ -27,7 +27,7 @@ func Grab(products vendapi.ProductUpload) (string, error) {
 	extension := parts[len(parts)-1]
 	// If the extension looks about the right length then use it for the
 	// filename, otherwise do not.
-	fileName := ""
+	var fileName string
 	if len(extension) == 3 {
 		fileName = fmt.Sprintf("%s.%s", products.ID, extension)
 	} else {
@@ -37,7 +37,8 @@ func Grab(products vendapi.ProductUpload) (string, error) {
 	// Write product data to file
 	err = ioutil.WriteFile(fileName, image, 0666)
 	if err != nil {
-		log.Printf("Something went wrong writing image to file: %s", err)
+		log.WithError(err).Error("Something went wrong writing image to file")
+		return "", err
 	}
 
 	return fileName, err
@@ -53,17 +54,12 @@ func urlGet(url string) ([]byte, error) {
 	}
 	client := &http.Client{Transport: tr}
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Printf("\nError creating http request: %s", err)
-		return nil, err
-	}
+	log.WithField("external_url", url).Info("Getting image from external url")
 
-	fmt.Printf("Grabbing: %s", url)
 	// Doing the request.
-	res, err := client.Do(req)
+	res, err := client.Get(url)
 	if err != nil {
-		fmt.Printf("\nError performing request: %s\n", err)
+		log.WithError(err).Error("Error performing request")
 		return nil, err
 	}
 	// Make sure response body is closed at end.
@@ -71,13 +67,14 @@ func urlGet(url string) ([]byte, error) {
 
 	// Check HTTP response.
 	if !vend.ResponseCheck(res.StatusCode) {
-		log.Fatalf("Bad status code: %d.", res.StatusCode)
+		log.WithField("status", res.StatusCode).Error("Bad status code")
+		return nil, err
 	}
 
 	// Read what we got back.
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("\nError while reading response body: %s\n", err)
+		log.WithError(err).Error("Error while reading response body")
 		return nil, err
 	}
 

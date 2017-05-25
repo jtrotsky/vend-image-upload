@@ -2,15 +2,12 @@ package manager
 
 import (
 	"errors"
-	"fmt"
-	"log"
-	"os"
 
 	"github.com/jtrotsky/govend/vend"
 	"github.com/jtrotsky/vend-image-upload/image"
-	"github.com/jtrotsky/vend-image-upload/logger"
 	"github.com/jtrotsky/vend-image-upload/reader"
 	"github.com/jtrotsky/vend-image-upload/vendapi"
+	log "github.com/sirupsen/logrus"
 )
 
 // Manager contains the Vend client.
@@ -23,46 +20,54 @@ func NewManager(client vend.Client) *Manager {
 	return &Manager{client}
 }
 
-// TODO: Comment syntax.
-
 // Run reads the product CSV, gets all products from Vend, then posts their images.
-func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
+func (manager *Manager) Run(productFilePath string) {
 	// Log opening timestamp.
-	log.Printf("BEGIN\n")
+	log.Info("BEGIN")
 
-	fmt.Printf("\nReading products from CSV file.\n")
+	log.Info("Reading products from CSV file")
+
 	// Read provided CSV file and store product info.
-	productsFromCSV, err := reader.ReadCSV(productFilePath, logFile)
+	productsFromCSV, err := reader.ReadCSV(productFilePath)
 	if err != nil {
-		log.Fatalf("Error reading CSV file: %s", err)
-		os.Exit(0)
+		log.WithError(err).Fatal("Error reading CSV file")
 	}
 
-	fmt.Printf("\nGrabbing products from Vend.\n")
+	log.Info("Grabbing products from Vend")
+
 	// Get all products from Vend.
 	_, productsFromVend, err := manager.client.Products()
 	if err != nil {
-		log.Fatalf("Failed to get products.: %s", err)
-		os.Exit(0)
+		log.WithError(err).Fatal("Failed to get products")
 	}
 
-	fmt.Printf("\nLooking for product matches.\n")
+	log.Info("Looking for product matches")
+
 	// Match products from Vend with those from the provided CSV file.
-	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV, logFile)
+	matchedProducts := matchVendProduct(productsFromVend, productsFromCSV)
 	if err != nil {
-		fmt.Printf("Error matching product from Vend to CSV input: %s", err)
+		log.WithError(err).Error("Error matching product from Vend to CSV input")
 	}
 
-	fmt.Printf("\nGetting and posting images.\n")
+	log.Info("Getting and posting images")
+
 	for _, product := range *matchedProducts {
 		// For each product match, first grab the image from the URL, then post that
 		// image to the product on Vend.
 		imagePath, err := image.Grab(product)
 		if err != nil {
-			logFile.WriteEntry(logger.RowError{
-				"network", 0, product.ID, product.SKU, product.Handle, product.ImageURL, err})
-			fmt.Printf("<<FAILURE>> Ignoring product %s %s.\n\n",
-				product.Handle, product.SKU)
+			log.WithError(err).WithFields(log.Fields{
+				"type":           "network",
+				"bla":            0,
+				"product_id":     product.ID,
+				"product_sku":    product.SKU,
+				"product_handle": product.Handle,
+				"image_url":      product.ImageURL,
+			})
+			log.WithFields(log.Fields{
+				"handle": product.Handle,
+				"sku":    product.SKU,
+			}).Warning("Ignoring product")
 			// Ignore product if image grabbing errored.
 			continue
 		}
@@ -70,17 +75,11 @@ func (manager *Manager) Run(productFilePath string, logFile *logger.LogFile) {
 			imagePath, product)
 	}
 
-	// If no errors were recorded then remove the error file.
-	if logFile.ErrorCount == 0 {
-		os.Remove(logFile.FilePath)
-	}
-
 	// Log closing timestamp.
-	log.Printf("FIN\n")
+	log.Info("FINISHED")
 }
 
-func matchVendProduct(productsFromVend *map[string]vend.Product,
-	productsFromCSV *[]vendapi.ProductUpload, logFile *logger.LogFile) *[]vendapi.ProductUpload {
+func matchVendProduct(productsFromVend *map[string]vend.Product, productsFromCSV *[]vendapi.ProductUpload) *[]vendapi.ProductUpload {
 
 	var products []vendapi.ProductUpload
 
@@ -102,24 +101,34 @@ Match:
 			if *vendProduct.SKU == csvProduct.SKU &&
 				*vendProduct.Handle == csvProduct.Handle {
 				products = append(products,
-					vendapi.ProductUpload{*vendProduct.ID, csvProduct.Handle, csvProduct.SKU,
-						csvProduct.ImageURL})
+					vendapi.ProductUpload{
+						ID:       *vendProduct.ID,
+						Handle:   csvProduct.Handle,
+						SKU:      csvProduct.SKU,
+						ImageURL: csvProduct.ImageURL,
+					})
 				continue Match
 			}
 		}
 		// Record product from CSV as error if no match to Vend products.
 		err := errors.New("No handle/sku match")
-		logFile.WriteEntry(
-			logger.RowError{
-				"match", 0, "", csvProduct.SKU, csvProduct.Handle, csvProduct.ImageURL, err})
+		log.WithError(err).WithFields(log.Fields{
+			"type":                  "match",
+			"csv_product_sku":       csvProduct.SKU,
+			"csv_product_handle":    csvProduct.Handle,
+			"csv_product_image_url": csvProduct.ImageURL,
+		})
 	}
 
 	// Check how many matches we got.
 	if len(products) > 0 {
-		fmt.Printf("%d of %d products matched.\n", len(products), len(*productsFromCSV))
+		log.WithFields(log.Fields{
+			"matched": len(products),
+			"total":   len(*productsFromCSV),
+		}).Info("Products matched")
 	} else {
-		fmt.Printf("No product matches.\n")
-		os.Exit(0)
+		log.Error("No product matches")
+		return nil
 	}
 	return &products
 }

@@ -4,27 +4,21 @@ package vendapi
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/jtrotsky/govend/vend"
+	log "github.com/sirupsen/logrus"
 )
-
-// TODO: Condensed version of below.
-// func Upload(imagePath string) error {
-// }
 
 // UploadImage uploads a single product image to Vend.
 func UploadImage(authToken, domainPrefix, imagePath string, product ProductUpload) error {
-
-	err := errors.New("Product has no image.")
+	var err error
 
 	// This checks we actually have an image to post.
 	if len(product.ImageURL) > 0 {
@@ -37,16 +31,18 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 		writer := multipart.NewWriter(&body)
 
 		// Key "image" value is the image binary.
-		part, err := writer.CreateFormFile("image", imageURL)
+		var part io.Writer
+		part, err = writer.CreateFormFile("image", imageURL)
 		if err != nil {
-			log.Fatalf("Error creating multipart form file: %s", err)
+			log.WithError(err).Warning("Error creating multipart form file")
 			return err
 		}
 
 		// Open image file.
-		file, err := os.Open(imagePath)
+		var file *os.File
+		file, err = os.Open(imagePath)
 		if err != nil {
-			log.Fatalf("Error opening image file: %s", err)
+			log.WithError(err).Warning("Error opening image file")
 			return err
 		}
 
@@ -64,16 +60,16 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 
 		err = writer.Close()
 		if err != nil {
-			log.Fatalf("Error closing writer: %s", err)
+			log.WithError(err).Warning("Error closing writer")
 			return err
 		}
 
 		// Create the Vend URL to send our image to.
 		url := vend.ImageUploadURLFactory(domainPrefix, product.ID)
 
-		fmt.Printf("\nUploading to: %s\n", url)
+		log.WithField("url", url).Info("Uploading to Vend")
 
-		req, err := http.NewRequest("POST", url, &body)
+		req, _ := http.NewRequest("POST", url, &body)
 
 		req.Header.Set("User-agent", "vend-image-upload")
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -89,7 +85,7 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 			res, err = client.Do(req)
 			// Catch error.
 			if err != nil || !vend.ResponseCheck(res.StatusCode) {
-				fmt.Printf("\nError performing request: %s. Status code: %d.", err, res.StatusCode)
+				log.WithError(err).WithField("status", res.StatusCode).Info("Error performing request")
 				// Delays between attempts will be exponentially longer each time.
 				attempt++
 				delay := vend.BackoffDuration(attempt)
@@ -104,9 +100,10 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 		// Make sure response body is closed at end.
 		defer res.Body.Close()
 
-		resBody, err := ioutil.ReadAll(res.Body)
+		var resBody []byte
+		resBody, err = ioutil.ReadAll(res.Body)
 		if err != nil {
-			fmt.Printf("Error while reading response body: %s\n", err)
+			log.WithError(err).Warning("Error reading response body")
 			return err
 		}
 
@@ -117,13 +114,13 @@ func UploadImage(authToken, domainPrefix, imagePath string, product ProductUploa
 		response := ImageUpload{}
 		err = json.Unmarshal(resBody, &response)
 		if err != nil {
-			log.Fatalf("Error unmarhsalling response body: %s", err)
+			log.WithError(err).Warning("Error unmarhsalling response body")
 			return err
 		}
 
 		payload := response.Data
 
-		fmt.Printf("<<SUCCESS!>> Image created at position: %d\n\n", *payload.Position)
+		log.WithField("position", *payload.Position).Info("Image created")
 	}
 	return err
 }

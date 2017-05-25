@@ -2,15 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/jtrotsky/govend/vend"
-	"github.com/jtrotsky/vend-image-upload/logger"
 	"github.com/jtrotsky/vend-image-upload/manager"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -22,19 +19,24 @@ var (
 
 func main() {
 	// Calculate time for use in log filename.
-	currentTimeUTC := time.Now()
+	// currentTimeUTC := time.Now()
 	// Set log filepath.
-	logFilePath = fmt.Sprintf("./%d_vendimageupload_errors.csv", currentTimeUTC.Unix())
+	// logFilePath = fmt.Sprintf("./%d_vendimageupload_errors.csv", currentTimeUTC.Unix())
 	// Start CSV logfile in current directory with unix timestamp in file name.
-	logFile := logger.NewLogFile(logFilePath)
-	logFile.CreateLog()
+	// logFile := logger.NewLogFile(logFilePath)
+	// logFile.CreateLog()
+
+	// Logrus configuration.
+	// log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.InfoLevel)
 
 	// Invoke new Vend client.
 	// Timezone argument left blank as unused.
 	vendClient := vend.NewClient(authToken, domainPrefix, "")
 	manager := manager.NewManager(vendClient)
 
-	manager.Run(productFilePath, logFile)
+	manager.Run(productFilePath)
 }
 
 func init() {
